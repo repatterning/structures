@@ -1,3 +1,4 @@
+"""Module interface.py"""
 import logging
 
 import pandas as pd
@@ -23,19 +24,31 @@ class Interface:
 
     @staticmethod
     def __deduplicate(frame: pd.DataFrame) -> pd.DataFrame:
+        """
+
+        :param frame:
+        :return:
+        """
 
         data = frame.sort_values(by=['timestamp', 'quality_code'], axis=0, ascending=True)
         data.drop_duplicates(subset=['timestamp'], keep='first', inplace=True)
 
         if data.shape[0] != frame.shape[0]:
-            logging.info('Counts: %s, %s\n%s', frame.shape, data.shape, data.head())
+            logging.info('original, deduplicated, deduplicates: %s, %s\n%s',
+                         frame.shape, data.shape, data.head())
 
         return data
 
     def exc(self, partitions: list[pr.Partitions]):
+        """
+
+        :param partitions:
+        :return:
+        """
 
         for partition in partitions[:3]:
 
             data = self.__get_data(uri=partition.uri)
             data = self.__deduplicate(frame=data)
-            self.__inspect.exc(data=data, partition=partition)
+            data = self.__inspect.exc(data=data, partition=partition)
+            logging.info(data.head())
