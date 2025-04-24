@@ -13,7 +13,6 @@ def main():
 
     partitions = src.assets.interface.Interface(
         service=service, s3_parameters=s3_parameters, attributes=attributes).exc()
-    logger.info(partitions)
 
     src.algorithms.interface.Interface().exc(partitions=partitions)
 
