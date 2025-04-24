@@ -30,21 +30,21 @@ class Inspect:
 
         return dates
 
-    def exc(self, data: pd.DataFrame, partition: pr.Partitions) -> pd.DataFrame:
+    def exc(self, frame: pd.DataFrame, partition: pr.Partitions) -> pd.DataFrame:
         """
 
-        :param data:
+        :param frame:
         :param partition:
         :return:
         """
 
-        data['date'] = pd.to_datetime(data['timestamp'], unit='ms')
-        dates: pd.DatetimeIndex = self.__get_reference(_maximum=data['date'].max(), _minimum=data['date'].min())
+        frame['date'] = pd.to_datetime(frame['timestamp'], unit='ms')
+        dates: pd.DatetimeIndex = self.__get_reference(_maximum=frame['date'].max(), _minimum=frame['date'].min())
 
         if dates.inferred_freq is None:
             logging.info('Inferred Frequency of %s (%s): %s',
                          partition.ts_id, partition.catchment_id, dates.inferred_freq)
 
-        frame = pd.DataFrame(data={'date': dates}).merge(data, how='left', on='date')
+        data = pd.DataFrame(data={'date': dates}).merge(frame, how='left', on='date')
 
-        return frame
+        return data
