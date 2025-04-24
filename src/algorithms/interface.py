@@ -38,4 +38,4 @@ class Interface:
 
             data = self.__get_data(uri=partition.uri)
             data = self.__deduplicate(frame=data)
-            self.__inspect.exc(data=data)
+            self.__inspect.exc(data=data, partition=partition)
