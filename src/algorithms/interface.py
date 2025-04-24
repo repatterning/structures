@@ -24,7 +24,8 @@ class Interface:
         data = frame.sort_values(by=['timestamp', 'quality_code'], axis=0, ascending=True)
         data.drop_duplicates(subset=['timestamp'], keep='first', inplace=True)
 
-        logging.info('Counts: %s, %s\n%s', frame.shape, data.shape, data.head())
+        if data.shape[0] != frame.shape[0]:
+            logging.info('Counts: %s, %s\n%s', frame.shape, data.shape, data.head())
 
         return data
 
