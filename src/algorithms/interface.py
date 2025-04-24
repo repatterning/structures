@@ -2,6 +2,7 @@ import logging
 
 import pandas as pd
 
+import src.algorithms.inspect
 import src.elements.partitions as pr
 import src.elements.text_attributes as txa
 import src.functions.streams
@@ -12,6 +13,7 @@ class Interface:
     def __init__(self):
 
         self.__streams = src.functions.streams.Streams()
+        self.__inspect = src.algorithms.inspect.Inspect()
 
     def __get_data(self, uri: str) -> pd.DataFrame:
 
@@ -19,7 +21,8 @@ class Interface:
 
         return self.__streams.read(text=text)
 
-    def __deduplicate(self, frame: pd.DataFrame) -> pd.DataFrame:
+    @staticmethod
+    def __deduplicate(frame: pd.DataFrame) -> pd.DataFrame:
 
         data = frame.sort_values(by=['timestamp', 'quality_code'], axis=0, ascending=True)
         data.drop_duplicates(subset=['timestamp'], keep='first', inplace=True)
@@ -35,4 +38,4 @@ class Interface:
 
             data = self.__get_data(uri=partition.uri)
             data = self.__deduplicate(frame=data)
-            data.info()
+            self.__inspect.exc(data=data)
