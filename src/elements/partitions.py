@@ -20,9 +20,12 @@ class Partitions(typing.NamedTuple):
             <a href="https://waterdata.usgs.gov/blog/gage_height/" target="_blank">United States Geological Survey</a><br><br>
     <b>datestr</b>: str<br>
         The <b>date string of the start date of a period</b>, format %Y-%m-%d,  i.e., YYYY-mm-dd.<br><br>
+    <b>uri</b>: str<br>
+        A uniform resource locator
     """
 
     ts_id: int
     catchment_id: int
     gauge_datum: float
     datestr: str
+    uri: str
