@@ -6,6 +6,7 @@ import src.assets.gauges
 import src.assets.partitions
 import src.elements.s3_parameters as s3p
 import src.elements.service as sr
+import src.elements.partitions as pr
 
 
 class Interface:
@@ -41,7 +42,19 @@ class Interface:
         return (f's3://{self.__s3_parameters.internal}/data/series/' + catchment_id.astype(str) +
                 '/' + ts_id.astype(str) + '/' + datestr.astype(str) + '.csv')
 
-    def exc(self) -> pd.DataFrame:
+    @staticmethod
+    def __structure(partitions: pd.DataFrame) -> list[pr.Partitions]:
+        """
+
+        :param partitions:
+        :return:
+        """
+
+        values: list[dict] = partitions.copy().reset_index(drop=True).to_dict(orient='records')
+
+        return [pr.Partitions(**value) for value in values]
+
+    def exc(self) -> list[pr.Partitions]:
         """
 
         :return:
@@ -54,7 +67,8 @@ class Interface:
         # Strings for data reading.  If self.__attributes.get('reacquire') is False, the partitions will be those
         # of the current and previous year only, per gauge time series.
         partitions: pd.DataFrame = src.assets.partitions.Partitions(data=gauges, attributes=self.__attributes).exc()
+        partitions.info()
         partitions['uri'] = self.__get_uri(partitions['catchment_id'], partitions['ts_id'], partitions['datestr'])
         logging.info(partitions)
 
-        return partitions
+        return self.__structure(partitions=partitions)
