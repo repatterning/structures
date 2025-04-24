@@ -11,11 +11,11 @@ def main():
     logger: logging.Logger = logging.getLogger(__name__)
     logger.info('Starting: %s', datetime.datetime.now().isoformat(timespec='microseconds'))
 
-    logger.info(attributes)
-
-    assets = src.assets.interface.Interface(
+    partitions = src.assets.interface.Interface(
         service=service, s3_parameters=s3_parameters, attributes=attributes).exc()
-    logger.info(assets)
+    logger.info(partitions)
+
+    src.algorithms.interface.Interface().exc(partitions=partitions)
 
 
 if __name__ == '__main__':
@@ -30,6 +30,7 @@ if __name__ == '__main__':
                         datefmt='%Y-%m-%d %H:%M:%S')
 
     # Modules
+    import src.algorithms.interface
     import src.assets.interface
     import src.elements.s3_parameters as s3p
     import src.elements.service as sr
