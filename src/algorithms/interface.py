@@ -42,7 +42,7 @@ class Interface:
     @staticmethod
     def __append_measure(frame: pd.DataFrame, gauge_datum: float):
         """
-        
+
         :param frame:
         :param gauge_datum:
         :return:
@@ -66,4 +66,5 @@ class Interface:
             data = self.__deduplicate(frame=data)
             data = self.__inspect.exc(frame=data.copy(), partition=partition)
             data = self.__append_measure(frame=data.copy(), gauge_datum=partition.gauge_datum)
+
             logging.info(data.head())
