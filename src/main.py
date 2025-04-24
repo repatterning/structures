@@ -11,7 +11,6 @@ def main():
     logger: logging.Logger = logging.getLogger(__name__)
     logger.info('Starting: %s', datetime.datetime.now().isoformat(timespec='microseconds'))
 
-    logger.info(s3_parameters)
     logger.info(attributes)
 
     assets = src.assets.interface.Interface(service=service, s3_parameters=s3_parameters, attributes=attributes)
