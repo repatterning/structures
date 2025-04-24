@@ -1,5 +1,6 @@
 """Module partitions.py"""
 import datetime
+import typing
 
 import dask
 import pandas as pd
@@ -10,13 +11,15 @@ class Partitions:
     Partitions for parallel computation.
     """
 
-    def __init__(self, data: pd.DataFrame):
+    def __init__(self, data: pd.DataFrame, attributes: dict):
         """
 
         :param data:
+        :param attributes:
         """
 
         self.__data = data
+        self.__attributes = attributes
 
         # Fields
         self.__fields = ['ts_id', 'catchment_id', 'gauge_datum', 'datestr']
@@ -36,23 +39,37 @@ class Partitions:
 
         return records
 
-    def exc(self, attributes: dict) -> pd.DataFrame:
+    def __boundaries(self) -> typing.Tuple[datetime.datetime, datetime.datetime]:
         """
+        The boundaries of the dates; datetime format
 
-        :param attributes:
         :return:
         """
 
-        # The boundaries of the dates; datetime format
-        _start = datetime.datetime.strptime(attributes.get('starting'), '%Y-%m-%d')
-        starting = datetime.datetime.strptime(f'{_start.year}-01-01', '%Y-%m-%d')
-
+        # Ending
         _end = datetime.datetime.now().year
         ending = datetime.datetime.strptime(f'{_end}-01-01', '%Y-%m-%d')
 
+        # Starting
+        if self.__attributes.get('reacquire'):
+            _start: int = datetime.datetime.strptime(self.__attributes.get('starting'), '%Y-%m-%d').year
+        else:
+            _start: int = _end - 1
+        starting = datetime.datetime.strptime(f'{_start}-01-01', '%Y-%m-%d')
+
+        return starting, ending
+
+    def exc(self) -> pd.DataFrame:
+        """
+
+        :return:
+        """
+
+        starting, ending = self.__boundaries()
+
         # Create series
         frame = pd.date_range(
-            start=starting, end=ending, freq=attributes.get('frequency')).to_frame(index=False, name='date')
+            start=starting, end=ending, freq=self.__attributes.get('frequency')).to_frame(index=False, name='date')
         starts: pd.Series = frame['date'].apply(lambda x: x.strftime('%Y-%m-%d'))
 
         # Compute partitions matrix
