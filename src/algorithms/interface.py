@@ -19,9 +19,19 @@ class Interface:
 
         return self.__streams.read(text=text)
 
+    def __deduplicate(self, frame: pd.DataFrame) -> pd.DataFrame:
+
+        data = frame.sort_values(by=['timestamp', 'quality_code'], axis=0, ascending=True)
+        data.drop_duplicates(subset=['timestamp'], keep='first', inplace=True)
+
+        logging.info('Counts: %s, %s\n%s', frame.shape, data.shape, data.head())
+
+        return data
+
     def exc(self, partitions: list[pr.Partitions]):
 
         for partition in partitions[:3]:
 
             data = self.__get_data(uri=partition.uri)
-            logging.info(data)
+            data = self.__deduplicate(frame=data)
+            data.info()
