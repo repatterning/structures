@@ -13,9 +13,9 @@ def main():
 
     logger.info(attributes)
 
-    assets = src.assets.interface.Interface(service=service, s3_parameters=s3_parameters, attributes=attributes)
-    partitions = assets.exc()
-    logger.info(partitions)
+    assets = src.assets.interface.Interface(
+        service=service, s3_parameters=s3_parameters, attributes=attributes).exc()
+    logger.info(assets)
 
 
 if __name__ == '__main__':
