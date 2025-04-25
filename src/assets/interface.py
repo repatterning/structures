@@ -1,12 +1,11 @@
 """Module interface.py"""
-import logging
 import pandas as pd
 
 import src.assets.gauges
 import src.assets.partitions
+import src.elements.partitions as pr
 import src.elements.s3_parameters as s3p
 import src.elements.service as sr
-import src.elements.partitions as pr
 
 
 class Interface:
