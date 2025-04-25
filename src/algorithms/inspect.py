@@ -1,0 +1,54 @@
+"""Module inspect.py"""
+import datetime
+import logging
+
+import pandas as pd
+
+import src.elements.partitions as pr
+
+
+class Inspect:
+    """
+    Ascertains date points; every 15 minutes.
+    """
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def __get_reference(_maximum: pd.Timestamp, _minimum: pd.Timestamp) -> pd.DatetimeIndex:
+        """
+
+        :param _maximum:
+        :param _minimum:
+        :return:
+        """
+
+        latest = datetime.datetime.now().year
+        dates = pd.date_range(
+            start=_minimum, end=_maximum, freq='0.25h', inclusive='left' if _maximum.year != latest else 'both')
+
+        return dates
+
+    def exc(self, frame: pd.DataFrame, partition: pr.Partitions) -> pd.DataFrame:
+        """
+
+        :param frame:
+        :param partition:
+        :return:
+        """
+
+        # A pandas.Timestamp field of dates
+        frame['date'] = pd.to_datetime(frame['timestamp'], unit='ms')
+
+        # Get the reference set of dates; Sequence(minimum, maximum, every 15 minutes)
+        dates: pd.DatetimeIndex = self.__get_reference(_maximum=frame['date'].max(), _minimum=frame['date'].min())
+
+        # Log problems
+        if dates.inferred_freq is None:
+            logging.info('Inferred Frequency of %s (%s): %s',
+                         partition.ts_id, partition.catchment_id, dates.inferred_freq)
+
+        data = pd.DataFrame(data={'date': dates}).merge(frame, how='left', on='date')
+
+        return data
