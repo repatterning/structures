@@ -7,6 +7,11 @@ import boto3
 
 
 def main():
+    """
+    Entry Point
+
+    :return:
+    """
 
     logger: logging.Logger = logging.getLogger(__name__)
     logger.info('Starting: %s', datetime.datetime.now().isoformat(timespec='microseconds'))
@@ -15,6 +20,8 @@ def main():
         service=service, s3_parameters=s3_parameters, attributes=attributes).exc()
 
     src.algorithms.interface.Interface().exc(partitions=partitions)
+
+    src.transfer.interface.Interface(service=service, s3_parameters=s3_parameters).exc()
 
     # Deleting __pycache__
     src.functions.cache.Cache().exc()
@@ -38,6 +45,7 @@ if __name__ == '__main__':
     import src.elements.service as sr
     import src.functions.cache
     import src.preface.interface
+    import src.transfer.interface
 
     connector: boto3.session.Session
     s3_parameters: s3p.S3Parameters
