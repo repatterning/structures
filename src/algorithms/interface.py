@@ -90,7 +90,7 @@ class Interface:
         __resampling = dask.delayed(src.algorithms.resampling.Resampling().exc)
 
         computations = []
-        for partition in partitions[:4]:
+        for partition in partitions:
 
             data = self.__get_data(uri=partition.uri)
             data = __deduplicate(frame=data)
