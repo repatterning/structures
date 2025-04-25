@@ -17,7 +17,8 @@ class Config:
         """
 
         self.warehouse: str = os.path.join(os.getcwd(), 'warehouse')
-        self.structures_ = os.path.join(self.warehouse, 'data', 'structures')
+        self.fundamentals_ = os.path.join(self.warehouse, 'data', 'fundamentals')
+        self.resamples_ = os.path.join(self.warehouse, 'data', 'resamples')
 
         # Template
         self.s3_parameters_key = 's3_parameters.yaml'
