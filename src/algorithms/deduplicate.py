@@ -5,6 +5,11 @@ import pandas as pd
 
 
 class Deduplicate:
+    """
+    Addresses duplicate readings per distinct time point.  If a time point has
+    duplicate, the reading with the best quality code, i.e., lowest numeric
+    value, is selected.
+    """
 
     def __init__(self):
         """
