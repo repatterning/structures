@@ -38,9 +38,13 @@ class Inspect:
         :return:
         """
 
+        # A pandas.Timestamp field of dates
         frame['date'] = pd.to_datetime(frame['timestamp'], unit='ms')
+
+        # Get the reference set of dates; Sequence(minimum, maximum, every 15 minutes)
         dates: pd.DatetimeIndex = self.__get_reference(_maximum=frame['date'].max(), _minimum=frame['date'].min())
 
+        # Log problems
         if dates.inferred_freq is None:
             logging.info('Inferred Frequency of %s (%s): %s',
                          partition.ts_id, partition.catchment_id, dates.inferred_freq)
