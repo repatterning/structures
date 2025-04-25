@@ -3,15 +3,16 @@ import logging
 import os
 
 import pandas as pd
-import config
+import dask
 
+import config
+import src.algorithms.deduplicate
 import src.algorithms.inspect
 import src.algorithms.resampling
-import src.algorithms.deduplicate
 import src.elements.partitions as pr
 import src.elements.text_attributes as txa
-import src.functions.streams
 import src.functions.directories
+import src.functions.streams
 
 
 class Interface:
@@ -27,12 +28,10 @@ class Interface:
         self.__directories = src.functions.directories.Directories()
         self.__streams = src.functions.streams.Streams()
 
-        self.__inspect = src.algorithms.inspect.Inspect()
-        self.__deduplicate = src.algorithms.deduplicate.Deduplicate()
-        self.__resampling = src.algorithms.resampling.Resampling()
-
+        # Configurations
         self.__configurations = config.Config()
 
+    @dask.delayed
     def __get_data(self, uri: str) -> pd.DataFrame:
         """
 
@@ -44,8 +43,8 @@ class Interface:
 
         return self.__streams.read(text=text)
 
-    @staticmethod
-    def __append_measure(frame: pd.DataFrame, gauge_datum: float):
+    @dask.delayed
+    def __append_measure(self, frame: pd.DataFrame, gauge_datum: float):
         """
 
         :param frame:
@@ -58,6 +57,7 @@ class Interface:
 
         return frame
 
+    @dask.delayed
     def __persist(self, data: pd.DataFrame, endpoint: str, partition: pr.Partitions):
         """
 
@@ -82,16 +82,25 @@ class Interface:
         :return:
         """
 
-        for partition in partitions[:3]:
+        # Delayed Tasks
+        __inspect = dask.delayed(src.algorithms.inspect.Inspect().exc)
+        __deduplicate = dask.delayed(src.algorithms.deduplicate.Deduplicate().exc)
+        __resampling = dask.delayed(src.algorithms.resampling.Resampling().exc)
+
+        computations = []
+        for partition in partitions[:8]:
 
             data = self.__get_data(uri=partition.uri)
-            data = self.__deduplicate.exc(frame=data)
-            data = self.__inspect.exc(frame=data.copy(), partition=partition)
+            data = __deduplicate(frame=data)
+            data = __inspect(frame=data.copy(), partition=partition)
 
             fundamentals = self.__append_measure(frame=data.copy(), gauge_datum=partition.gauge_datum)
-            self.__persist(data=fundamentals, endpoint=self.__configurations.fundamentals_, partition=partition)
+            resamples = __resampling(data=fundamentals)
 
-            resamples = self.__resampling.exc(data=fundamentals)
-            self.__persist(data=resamples, endpoint=self.__configurations.resamples_, partition=partition)
+            computations.append((
+                self.__persist(data=fundamentals, endpoint=self.__configurations.fundamentals_, partition=partition),
+                self.__persist(data=resamples, endpoint=self.__configurations.resamples_, partition=partition)
+            ))
 
-            logging.info(resamples)
+        calculations = dask.compute(computations, scheduler='threads')[0]
+        logging.info(calculations)
