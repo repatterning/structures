@@ -73,7 +73,7 @@ class Interface:
         message = self.__streams.write(
             blob=data, path=os.path.join(path, f'{partition.datestr}.csv'))
 
-        return message
+        return message + f', {os.path.basename(endpoint)} | {partition.ts_id}'
 
     def exc(self, partitions: list[pr.Partitions]):
         """
