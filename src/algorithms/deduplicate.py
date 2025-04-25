@@ -26,7 +26,7 @@ class Deduplicate:
     def __deduplicate(self, frame: pd.DataFrame) -> pd.DataFrame:
         """
 
-        :param frame:
+        :param frame: a gauge's time series, and supplementary, data
         :return:
         """
 
@@ -40,5 +40,10 @@ class Deduplicate:
         return data
 
     def exc(self, frame: pd.DataFrame) -> pd.DataFrame:
+        """
+
+        :param frame: a gauge's time series, and supplementary, data
+        :return:
+        """
 
         return self.__deduplicate(frame=frame)
