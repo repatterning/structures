@@ -60,6 +60,8 @@ class Interface:
     @dask.delayed
     def __persist(self, data: pd.DataFrame, endpoint: str, partition: pr.Partitions):
         """
+        To minimise storage costs, drop 'date', keep 'timestamp'.  The 'date' values are
+         derivable from the 'timestamp' values.
 
         :param data:
         :param endpoint:
@@ -71,7 +73,7 @@ class Interface:
         self.__directories.create(path=path)
 
         message = self.__streams.write(
-            blob=data, path=os.path.join(path, f'{partition.datestr}.csv'))
+            blob=data.drop(columns='date'), path=os.path.join(path, f'{partition.datestr}.csv'))
 
         return message + f', {os.path.basename(endpoint)} | {partition.ts_id}'
 
