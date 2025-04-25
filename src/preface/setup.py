@@ -1,6 +1,8 @@
 """
 Module setup.py
 """
+import logging
+import os
 import sys
 
 import config
@@ -33,10 +35,12 @@ class Setup:
 
         # Configurations
         self.__configurations = config.Config()
-        self.__prefix = s3_parameters.path_internal_data + 'structures'
 
         # An instance for interacting with objects within an Amazon S3 prefix
         self.__pre = src.s3.prefix.Prefix(service=self.__service, bucket_name=self.__s3_parameters.internal)
+
+        self.__prefixes = [self.__s3_parameters.path_internal_data + os.path.basename(value)
+                    for value in [self.__configurations.resamples_, self.__configurations.fundamentals_] ]
 
     def __clear_prefix(self) -> bool:
         """
@@ -44,15 +48,20 @@ class Setup:
         :return:
         """
 
+        logging.info(self.__prefixes)
+
         # Get the keys therein
-        keys: list[str] = self.__pre.objects(prefix=self.__prefix)
+        states = []
+        for prefix in self.__prefixes:
+            keys: list[str] = self.__pre.objects(prefix=prefix)
+            if len(keys) > 0:
+                objects = [{'Key' : key} for key in keys]
+                state = self.__pre.delete(objects=objects)
+                states.append(bool(state))
+            else:
+                states.append(True)
 
-        if len(keys) > 0:
-            objects = [{'Key' : key} for key in keys]
-            state = self.__pre.delete(objects=objects)
-            return bool(state)
-
-        return True
+        return all(states)
 
     def __s3(self) -> bool:
         """
@@ -92,9 +101,9 @@ class Setup:
         if reacquire:
             self.__s3()
 
-        keys = self.__pre.objects(prefix=self.__prefix)
-
         if self.__local():
+            listings = [self.__pre.objects(prefix=prefix) for prefix in self.__prefixes]
+            keys = sum(listings, [])
             return len(keys)
 
-        sys.exit('Error: Set up step failure.')
+        sys.exit('Error: Set up failure.')
