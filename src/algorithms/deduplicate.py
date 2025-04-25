@@ -38,3 +38,7 @@ class Deduplicate:
                          frame.shape, data.shape, data.head())
 
         return data
+
+    def exc(self, frame: pd.DataFrame) -> pd.DataFrame:
+
+        return self.__deduplicate(frame=frame)
