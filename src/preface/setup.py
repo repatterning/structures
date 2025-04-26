@@ -1,7 +1,6 @@
 """
 Module setup.py
 """
-import logging
 import os
 import sys
 
@@ -47,8 +46,6 @@ class Setup:
 
         :return:
         """
-
-        logging.info(self.__prefixes)
 
         # Get the keys therein
         states = []
