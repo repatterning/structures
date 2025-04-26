@@ -29,18 +29,6 @@ class Interface:
         self.__s3_parameters = s3_parameters
         self.__attributes = attributes
 
-    def __get_uri(self, catchment_id: pd.Series, ts_id: pd.Series, datestr: pd.Series):
-        """
-
-        :param catchment_id:
-        :param ts_id:
-        :param datestr:
-        :return:
-        """
-
-        return (f's3://{self.__s3_parameters.internal}/data/series/' + catchment_id.astype(str) +
-                '/' + ts_id.astype(str) + '/' + datestr.astype(str) + '.csv')
-
     @staticmethod
     def __structure(partitions: pd.DataFrame) -> list[pr.Partitions]:
         """
@@ -59,12 +47,11 @@ class Interface:
         :return:
         """
 
-        # Applicable time series, i.e., gauge, identification codes
+        # Applicable time series metadata, i.e., gauge, identification codes
         gauges = src.assets.gauges.Gauges(service=self.__service, s3_parameters=self.__s3_parameters).exc()
 
         # Strings for data reading.  If self.__attributes.get('reacquire') is False, the partitions will be those
         # of the current and previous year only, per gauge time series.
-        partitions: pd.DataFrame = src.assets.partitions.Partitions(data=gauges, attributes=self.__attributes).exc()
-        partitions['uri'] = self.__get_uri(partitions['catchment_id'], partitions['ts_id'], partitions['datestr'])
+        partitions = src.assets.partitions.Partitions(data=gauges, attributes=self.__attributes).exc()
 
         return self.__structure(partitions=partitions)

@@ -1,17 +1,12 @@
 """Module gauges.py"""
-import itertools
-import logging
-import os
-
-import dask
 import numpy as np
 import pandas as pd
 
 import src.elements.s3_parameters as s3p
 import src.elements.service as sr
-import src.s3.keys
-import src.functions.streams
 import src.elements.text_attributes as txa
+import src.functions.streams
+import src.s3.prefix
 
 
 class Gauges:
@@ -29,9 +24,14 @@ class Gauges:
         self.__service = service
         self.__s3_parameters = s3_parameters
 
-        self.__objects = src.s3.keys.Keys(service=self.__service, bucket_name=self.__s3_parameters.internal)
+        # An instance for interacting with objects within an Amazon S3 prefix
+        self.__pre = src.s3.prefix.Prefix(service=self.__service, bucket_name=self.__s3_parameters.internal)
 
     def __get_datum(self) -> pd.DataFrame:
+        """
+
+        :return:
+        """
 
         uri = f's3://{self.__s3_parameters.internal}/{self.__s3_parameters.path_internal_references}assets.csv'
         usecols = ['ts_id', 'gauge_datum']
@@ -39,26 +39,26 @@ class Gauges:
 
         return src.functions.streams.Streams().read(text=text)
 
-    @dask.delayed
-    def __get_section(self, listing: str) -> pd.DataFrame:
+    @staticmethod
+    def __get_elements(objects: list) -> pd.DataFrame:
         """
 
-        :param listing:
+        :param objects:
         :return:
         """
 
-        catchment_id = os.path.basename(os.path.dirname(listing))
+        # A set of S3 uniform resource locators
+        values = pd.DataFrame(data={'uri': objects})
 
-        # The corresponding prefixes
-        prefixes = self.__objects.excerpt(prefix=listing, delimiter='/')
-        series_ = [os.path.basename(os.path.dirname(prefix)) for prefix in prefixes]
+        # Splitting locators
+        rename = {0: 'endpoint', 1: 'catchment_id', 2: 'ts_id', 3: 'name'}
+        splittings = values['uri'].str.rsplit('/', n=3, expand=True)
+        splittings.rename(columns=rename, inplace=True)
 
-        # A frame of catchment & time series identification codes
-        frame = pd.DataFrame(
-            data={'catchment_id': itertools.repeat(catchment_id, len(series_)),
-                  'ts_id': series_})
+        # Collating
+        values = values.copy().join(splittings, how='left')
 
-        return frame
+        return values
 
     def exc(self) -> pd.DataFrame:
         """
@@ -66,20 +66,24 @@ class Gauges:
         :return:
         """
 
-        listings = self.__objects.excerpt(prefix='data/series/', delimiter='/')
+        keys: list[str] = self.__pre.objects(prefix=self.__s3_parameters.path_internal_data + 'series')
+        if len(keys) > 0:
+            objects = [f's3://{self.__s3_parameters.internal}/{key}' for key in keys]
+        else:
+            return pd.DataFrame()
 
-        computations = []
-        for listing in listings:
-            frame = self.__get_section(listing=listing)
-            computations.append(frame)
-        frames = dask.compute(computations, scheduler='threads')[0]
-        codes = pd.concat(frames, ignore_index=True, axis=0)
+        # The variable objects is a list of uniform resource locators.  Each locator includes a 'ts_id',
+        # 'catchment_id', 'datestr' substring; the function __get_elements extracts these items.
+        values = self.__get_elements(objects=objects)
 
-        codes['catchment_id'] = codes['catchment_id'].astype(dtype=np.int64)
-        codes['ts_id'] = codes['ts_id'].astype(dtype=np.int64)
+        # Types
+        values['catchment_id'] = values['catchment_id'].astype(dtype=np.int64)
+        values['ts_id'] = values['ts_id'].astype(dtype=np.int64)
+        values.loc[:, 'datestr'] = values['name'].str.replace(pat='.csv', repl='')
+        values.drop(columns=['endpoint', 'name'], inplace=True)
 
+        # Appending the gauge datum per gauge instance
         datum = self.__get_datum()
-        codes = codes.copy().merge(datum, how='left', on='ts_id')
-        logging.info(codes)
+        codes = values.copy().merge(datum, how='left', on='ts_id')
 
         return codes
