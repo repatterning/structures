@@ -1,6 +1,4 @@
 """Module gauges.py"""
-import logging
-
 import numpy as np
 import pandas as pd
 
@@ -8,7 +6,6 @@ import src.elements.s3_parameters as s3p
 import src.elements.service as sr
 import src.elements.text_attributes as txa
 import src.functions.streams
-import src.s3.keys
 import src.s3.prefix
 
 
