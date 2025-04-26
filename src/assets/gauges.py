@@ -2,6 +2,7 @@
 import itertools
 import logging
 import os
+import pathlib
 
 import dask
 import numpy as np
@@ -10,6 +11,7 @@ import pandas as pd
 import src.elements.s3_parameters as s3p
 import src.elements.service as sr
 import src.s3.keys
+import src.s3.prefix
 import src.functions.streams
 import src.elements.text_attributes as txa
 
@@ -31,7 +33,14 @@ class Gauges:
 
         self.__objects = src.s3.keys.Keys(service=self.__service, bucket_name=self.__s3_parameters.internal)
 
+        # An instance for interacting with objects within an Amazon S3 prefix
+        self.__pre = src.s3.prefix.Prefix(service=self.__service, bucket_name=self.__s3_parameters.internal)
+
     def __get_datum(self) -> pd.DataFrame:
+        """
+
+        :return:
+        """
 
         uri = f's3://{self.__s3_parameters.internal}/{self.__s3_parameters.path_internal_references}assets.csv'
         usecols = ['ts_id', 'gauge_datum']
@@ -66,20 +75,27 @@ class Gauges:
         :return:
         """
 
-        listings = self.__objects.excerpt(prefix='data/series/', delimiter='/')
+        keys: list[str] = self.__pre.objects(prefix=self.__s3_parameters.path_internal_data + 'series')
+        logging.info(keys)
+        if len(keys) > 0:
+            objects = [f's3://{self.__s3_parameters.internal}/{key}' for key in keys]
+            logging.info(objects[:5])
+        else:
+            return pd.DataFrame()
 
-        computations = []
-        for listing in listings:
-            frame = self.__get_section(listing=listing)
-            computations.append(frame)
-        frames = dask.compute(computations, scheduler='threads')[0]
-        codes = pd.concat(frames, ignore_index=True, axis=0)
-
-        codes['catchment_id'] = codes['catchment_id'].astype(dtype=np.int64)
-        codes['ts_id'] = codes['ts_id'].astype(dtype=np.int64)
+        rename = {0: 'endpoint', 1: 'catchment_id', 2: 'ts_id', 3: 'name'}
+        values = pd.DataFrame(data={'uri': objects})
+        splittings = values['uri'].str.rsplit('/', n=3, expand=True)
+        values = values.copy().join(splittings, how='left')
+        values.rename(columns=rename, inplace=True)
+        values['catchment_id'] = values['catchment_id'].astype(dtype=np.int64)
+        values['ts_id'] = values['ts_id'].astype(dtype=np.int64)
+        values.loc[:, 'datestr'] = values['name'].str.replace(pat='.csv', repl='')
+        values.drop(columns=['endpoint', 'name'], inplace=True)
+        logging.info(values)
+        values.info()
 
         datum = self.__get_datum()
-        codes = codes.copy().merge(datum, how='left', on='ts_id')
-        logging.info(codes)
+        codes = values.copy().merge(datum, how='left', on='ts_id')
 
         return codes
