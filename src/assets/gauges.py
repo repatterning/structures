@@ -1,19 +1,15 @@
 """Module gauges.py"""
-import itertools
 import logging
-import os
-import pathlib
 
-import dask
 import numpy as np
 import pandas as pd
 
 import src.elements.s3_parameters as s3p
 import src.elements.service as sr
+import src.elements.text_attributes as txa
+import src.functions.streams
 import src.s3.keys
 import src.s3.prefix
-import src.functions.streams
-import src.elements.text_attributes as txa
 
 
 class Gauges:
@@ -47,27 +43,6 @@ class Gauges:
         text = txa.TextAttributes(uri=uri, header=0, usecols=usecols)
 
         return src.functions.streams.Streams().read(text=text)
-
-    @dask.delayed
-    def __get_section(self, listing: str) -> pd.DataFrame:
-        """
-
-        :param listing:
-        :return:
-        """
-
-        catchment_id = os.path.basename(os.path.dirname(listing))
-
-        # The corresponding prefixes
-        prefixes = self.__objects.excerpt(prefix=listing, delimiter='/')
-        series_ = [os.path.basename(os.path.dirname(prefix)) for prefix in prefixes]
-
-        # A frame of catchment & time series identification codes
-        frame = pd.DataFrame(
-            data={'catchment_id': itertools.repeat(catchment_id, len(series_)),
-                  'ts_id': series_})
-
-        return frame
 
     def exc(self) -> pd.DataFrame:
         """
