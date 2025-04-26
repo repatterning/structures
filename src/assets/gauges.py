@@ -27,8 +27,6 @@ class Gauges:
         self.__service = service
         self.__s3_parameters = s3_parameters
 
-        self.__objects = src.s3.keys.Keys(service=self.__service, bucket_name=self.__s3_parameters.internal)
-
         # An instance for interacting with objects within an Amazon S3 prefix
         self.__pre = src.s3.prefix.Prefix(service=self.__service, bucket_name=self.__s3_parameters.internal)
 
@@ -44,6 +42,27 @@ class Gauges:
 
         return src.functions.streams.Streams().read(text=text)
 
+    @staticmethod
+    def __get_elements(objects: list) -> pd.DataFrame:
+        """
+
+        :param objects:
+        :return:
+        """
+
+        # A set of S3 uniform resource locators
+        values = pd.DataFrame(data={'uri': objects})
+
+        # Splitting locators
+        rename = {0: 'endpoint', 1: 'catchment_id', 2: 'ts_id', 3: 'name'}
+        splittings = values['uri'].str.rsplit('/', n=3, expand=True)
+        splittings.rename(columns=rename, inplace=True)
+
+        # Collating
+        values = values.copy().join(splittings, how='left')
+
+        return values
+
     def exc(self) -> pd.DataFrame:
         """
 
@@ -51,25 +70,22 @@ class Gauges:
         """
 
         keys: list[str] = self.__pre.objects(prefix=self.__s3_parameters.path_internal_data + 'series')
-        logging.info(keys)
         if len(keys) > 0:
             objects = [f's3://{self.__s3_parameters.internal}/{key}' for key in keys]
-            logging.info(objects[:5])
         else:
             return pd.DataFrame()
 
-        rename = {0: 'endpoint', 1: 'catchment_id', 2: 'ts_id', 3: 'name'}
-        values = pd.DataFrame(data={'uri': objects})
-        splittings = values['uri'].str.rsplit('/', n=3, expand=True)
-        values = values.copy().join(splittings, how='left')
-        values.rename(columns=rename, inplace=True)
+        # The variable objects is a list of uniform resource locators.  Each locator includes a 'ts_id',
+        # 'catchment_id', 'datestr' substring; the function __get_elements extracts these items.
+        values = self.__get_elements(objects=objects)
+
+        # Types
         values['catchment_id'] = values['catchment_id'].astype(dtype=np.int64)
         values['ts_id'] = values['ts_id'].astype(dtype=np.int64)
         values.loc[:, 'datestr'] = values['name'].str.replace(pat='.csv', repl='')
         values.drop(columns=['endpoint', 'name'], inplace=True)
-        logging.info(values)
-        values.info()
 
+        # Appending the gauge datum per gauge instance
         datum = self.__get_datum()
         codes = values.copy().merge(datum, how='left', on='ts_id')
 
