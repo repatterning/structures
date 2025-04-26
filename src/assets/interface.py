@@ -64,8 +64,6 @@ class Interface:
 
         # Strings for data reading.  If self.__attributes.get('reacquire') is False, the partitions will be those
         # of the current and previous year only, per gauge time series.
-        partitions = gauges.copy()
-        # partitions: pd.DataFrame = src.assets.partitions.Partitions(data=gauges, attributes=self.__attributes).exc()
-        # partitions['uri'] = self.__get_uri(partitions['catchment_id'], partitions['ts_id'], partitions['datestr'])
+        partitions = src.assets.partitions.Partitions(data=gauges, attributes=self.__attributes).exc()
 
         return self.__structure(partitions=partitions)
