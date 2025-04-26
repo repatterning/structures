@@ -20,9 +20,6 @@ class Partitions:
         self.__data = data
         self.__attributes = attributes
 
-        # Fields
-        self.__fields = ['ts_id', 'catchment_id', 'gauge_datum', 'datestr']
-
     @staticmethod
     def __boundaries() -> typing.Tuple[datetime.datetime, datetime.datetime]:
         """
