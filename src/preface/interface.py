@@ -27,7 +27,7 @@ class Interface:
         :return:
         """
 
-        key_name = 'attributes.json'
+        key_name = 'data/structures/attributes.json'
 
         attributes =  src.s3.configurations.Configurations(connector=connector).objects(key_name=key_name)
         logging.info(attributes)
