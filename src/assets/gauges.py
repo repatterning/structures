@@ -60,7 +60,7 @@ class Gauges:
 
         return values
 
-    def exc(self) -> pd.DataFrame:
+    def __get_keys(self) -> list[str]:
         """
 
         :return:
@@ -73,7 +73,15 @@ class Gauges:
             computations.append(listings)
         keys: list[str] = sum(computations, [])
 
-        # keys: list[str] = self.__pre.objects(prefix=self.__s3_parameters.path_internal_data + 'series')
+        return keys
+
+    def exc(self) -> pd.DataFrame:
+        """
+
+        :return:
+        """
+
+        keys = self.__get_keys()
         if len(keys) > 0:
             objects = [f's3://{self.__s3_parameters.internal}/{key}' for key in keys]
         else:
