@@ -46,10 +46,10 @@ class Interface:
             connector=connector, region_name=s3_parameters.region_name).exc()
         attributes: dict = self.__get_attributes(connector=connector)
 
-        n_keys: int = src.preface.setup.Setup(
+        empty = src.preface.setup.Setup(
             service=service, s3_parameters=s3_parameters).exc(reacquire=attributes['reacquire'])
 
-        if n_keys == 0:
+        if empty:
             attributes['reacquire'] = True
             logging.info(attributes)
 
