@@ -42,7 +42,7 @@ class Keys:
         # Keys
         try:
             dictionaries = self.__s3_client.list_objects_v2(
-                Bucket=self.__bucket_name, Prefix=prefix, Delimiter=delimiter)
+                Bucket=self.__bucket_name, Prefix=prefix, Delimiter=delimiter, MaxKeys=100000)
         except botocore.exceptions.ClientError as err:
             raise err from err
 
