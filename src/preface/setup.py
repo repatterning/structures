@@ -89,7 +89,7 @@ class Setup:
         # The warehouse
         return directories.create(path=self.__configurations.warehouse)
 
-    def exc(self, reacquire: bool) -> int:
+    def exc(self, reacquire: bool) -> bool:
         """
 
         :return:
@@ -101,6 +101,6 @@ class Setup:
         if self.__local():
             listings = [self.__pre.objects(prefix=prefix) for prefix in self.__prefixes]
             keys = sum(listings, [])
-            return len(keys)
+            return len(keys) == 0
 
         sys.exit('Error: Set up failure.')
