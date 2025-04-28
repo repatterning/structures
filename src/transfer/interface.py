@@ -29,7 +29,7 @@ class Interface:
         self.__s3_parameters: s3p.S3Parameters = s3_parameters
 
         buffer = src.s3.unload.Unload(s3_client=self.__service.s3_client).exc(
-            bucket_name=self.__s3_parameters.configurations, key_name='references/metadata.json')
+            bucket_name=self.__s3_parameters.configurations, key_name='data/metadata.json')
         self.__metadata = json.loads(buffer)
 
     def __set_metadata(self, frame: pd.DataFrame) -> pd.DataFrame:
