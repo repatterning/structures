@@ -2,6 +2,7 @@
 import datetime
 import logging
 
+import numpy as np
 import pandas as pd
 
 import src.elements.partitions as pr
@@ -13,10 +14,15 @@ class Inspect:
     """
 
     def __init__(self):
-        pass
+        """
+        Constructor
+        """
+
+        # The gauges record river water levels every 15 minutes; at the quarter points of an hour.
+        self.__frequency = '0.25h'
 
     @staticmethod
-    def __get_reference(_maximum: pd.Timestamp, _minimum: pd.Timestamp) -> pd.DatetimeIndex:
+    def __get_reference(_maximum: pd.Timestamp, _minimum: pd.Timestamp) -> pd.DataFrame:
         """
 
         :param _maximum:
@@ -26,9 +32,25 @@ class Inspect:
 
         latest = datetime.datetime.now().year
         dates = pd.date_range(
-            start=_minimum, end=_maximum, freq='0.25h', inclusive='left' if _maximum.year != latest else 'both')
+            start=_minimum, end=_maximum, freq='0.25h',
+            inclusive='left' if _maximum.year != latest else 'both',
+            name='date').to_frame()
+        dates.reset_index(drop=True, inplace=True)
 
         return dates
+
+    @staticmethod
+    def __set_missing(data: pd.DataFrame, partition: pr.Partitions) -> pd.DataFrame:
+
+        frame = data.copy()
+        states = frame['measure'].isna()
+        logging.info(frame.loc[states, :])
+
+        frame.loc[states, 'ts_id'] = partition.ts_id
+        frame.loc[states, 'timestamp'] = (frame.loc[states, 'date'].astype(np.int64)/1000000).values
+        logging.info(frame.loc[states, :])
+
+        return frame
 
     def exc(self, frame: pd.DataFrame, partition: pr.Partitions) -> pd.DataFrame:
         """
@@ -42,13 +64,13 @@ class Inspect:
         frame['date'] = pd.to_datetime(frame['timestamp'], unit='ms')
 
         # Get the reference set of dates; Sequence(minimum, maximum, every 15 minutes)
-        dates: pd.DatetimeIndex = self.__get_reference(_maximum=frame['date'].max(), _minimum=frame['date'].min())
+        dates: pd.DataFrame = self.__get_reference(_maximum=frame['date'].max(), _minimum=frame['date'].min())
 
-        # Log problems
-        if dates.inferred_freq is None:
-            logging.info('Inferred Frequency of %s (%s): %s',
-                         partition.ts_id, partition.catchment_id, dates.inferred_freq)
+        # Ascertaining a strictly monotonically increasing date sequence of frequency 0.25 hours
+        data = frame.copy().merge(dates, how='right', on='date')
+        data.sort_values(by='date', ascending=True, inplace=True)
 
-        data = pd.DataFrame(data={'date': dates}).merge(frame, how='left', on='date')
+        # Setting empty cells of known values
+        data = self.__set_missing(data=data, partition=partition)
 
         return data
