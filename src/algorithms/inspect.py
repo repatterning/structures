@@ -21,8 +21,7 @@ class Inspect:
         # The gauges record river water levels every 15 minutes; at the quarter points of an hour.
         self.__frequency = '0.25h'
 
-    @staticmethod
-    def __get_reference(_maximum: pd.Timestamp, _minimum: pd.Timestamp) -> pd.DataFrame:
+    def __get_reference(self, _maximum: pd.Timestamp, _minimum: pd.Timestamp) -> pd.DataFrame:
         """
 
         :param _maximum:
@@ -32,7 +31,7 @@ class Inspect:
 
         latest = datetime.datetime.now().year
         dates = pd.date_range(
-            start=_minimum, end=_maximum, freq='0.25h',
+            start=_minimum, end=_maximum, freq=self.__frequency,
             inclusive='left' if _maximum.year != latest else 'both',
             name='date').to_frame()
         dates.reset_index(drop=True, inplace=True)
