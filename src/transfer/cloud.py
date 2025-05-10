@@ -26,8 +26,9 @@ class Cloud:
     def __delete(self, section: str, partition: pr.Partitions) -> int:
         """
 
-        :param section:
-        :param partition:
+        :param section: fundamentals or resamples; the granularity of the former is 0.25 hours, whilst
+                        that of the latter is 1 hour.
+        :param partition: Refer to src/elements/partitions.py
         :return:
         """
 
