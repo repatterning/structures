@@ -19,10 +19,10 @@ class Interface:
     def __init__(self, service: sr.Service, s3_parameters: s3p.S3Parameters, attributes: dict):
         """
 
-        :param service:
+        :param service: A suite of services for interacting with Amazon Web Services.
         :param s3_parameters: The overarching S3 parameters settings of this project, e.g., region code
                               name, buckets, etc.
-        :param attributes:
+        :param attributes: A set of activity directing values for the structures project.
         """
 
         self.__service = service
@@ -33,7 +33,7 @@ class Interface:
     def __structure(partitions: pd.DataFrame) -> list[pr.Partitions]:
         """
 
-        :param partitions:
+        :param partitions: Refer to src/elements/partitions.py
         :return:
         """
 
