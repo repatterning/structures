@@ -61,6 +61,9 @@ class Partitions:
         if self.__attributes.get('reacquire'):
             return self.__data
 
+        if self.__attributes.get('excerpt') is not None:
+            return self.__data.loc[self.__data['ts_id'].isin(self.__attributes.get('excerpt')), :]
+
         starting, ending = self.__boundaries()
         dates = self.__dates(starting=starting, ending=ending)
         frame = dates.merge(self.__data, how='left', on='datestr')
