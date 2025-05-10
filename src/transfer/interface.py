@@ -7,9 +7,11 @@ import pandas as pd
 
 import src.elements.s3_parameters as s3p
 import src.elements.service as sr
+import src.elements.partitions as pr
 import src.s3.ingress
 import src.s3.unload
 import src.transfer.dictionary
+import src.transfer.cloud
 
 
 class Interface:
@@ -17,16 +19,18 @@ class Interface:
     Class Interface
     """
 
-    def __init__(self, service: sr.Service,  s3_parameters: s3p):
+    def __init__(self, service: sr.Service,  s3_parameters: s3p, attributes: dict):
         """
 
         :param service: A suite of services for interacting with Amazon Web Services.
         :param s3_parameters: The overarching S3 parameters settings of this
                               project, e.g., region code name, buckets, etc.
+        :param attributes:
         """
 
         self.__service: sr.Service = service
         self.__s3_parameters: s3p.S3Parameters = s3_parameters
+        self.__attributes: dict = attributes
 
         buffer = src.s3.unload.Unload(s3_client=self.__service.s3_client).exc(
             bucket_name=self.__s3_parameters.configurations, key_name='data/metadata.json')
@@ -45,18 +49,23 @@ class Interface:
         return frame
 
 
-    def exc(self):
+    def exc(self, partitions: list[pr.Partitions]):
         """
 
+        :param partitions:
         :return:
         """
+
+        # Preparing
+        if self.__attributes.get('excerpt'):
+            logging.info(self.__attributes.get('excerpt'))
+            src.transfer.cloud.Cloud(s3_parameters=self.__s3_parameters).exc(partitions=partitions)
 
         # The strings for transferring data to Amazon S3 (Simple Storage Service)
         strings: pd.DataFrame = src.transfer.dictionary.Dictionary().exc(
             path=os.path.join(os.getcwd(), 'warehouse'), extension='*', prefix='')
 
         # Transfer
-
         if strings.empty:
             logging.info('Empty')
         else:
