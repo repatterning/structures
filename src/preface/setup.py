@@ -92,6 +92,7 @@ class Setup:
     def exc(self, reacquire: bool) -> bool:
         """
 
+        :param reacquire: Re-read all raw data, and structure?
         :return:
         """
 

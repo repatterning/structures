@@ -1,9 +1,9 @@
 """Module interface.py"""
 import typing
-import logging
 
 import boto3
 
+import config
 import src.elements.s3_parameters as s3p
 import src.elements.service as sr
 import src.functions.service
@@ -18,19 +18,22 @@ class Interface:
     """
 
     def __init__(self):
-        pass
-
-    @staticmethod
-    def __get_attributes(connector: boto3.session.Session) -> dict:
+        """
+        Constructor
         """
 
+        self.__configurations = config.Config()
+
+    def __get_attributes(self, connector: boto3.session.Session) -> dict:
+        """
+
+        :param connector: <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/session.html#custom-session">
+                          A boto3 custom session</a>
         :return:
         """
 
-        key_name = 'data/structures/attributes.json'
-
-        attributes =  src.s3.configurations.Configurations(connector=connector).objects(key_name=key_name)
-        logging.info(attributes)
+        attributes =  src.s3.configurations.Configurations(
+            connector=connector).objects(key_name=self.__configurations.attributes_key)
 
         return attributes
 
@@ -51,6 +54,5 @@ class Interface:
 
         if empty:
             attributes['reacquire'] = True
-            logging.info(attributes)
 
         return connector, s3_parameters, service, attributes

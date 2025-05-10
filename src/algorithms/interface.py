@@ -94,9 +94,8 @@ class Interface:
 
             data = self.__get_data(uri=partition.uri)
             data = __deduplicate(frame=data)
-            data = __inspect(frame=data.copy(), partition=partition)
-
-            fundamentals = self.__append_measure(frame=data.copy(), gauge_datum=partition.gauge_datum)
+            data = self.__append_measure(frame=data.copy(), gauge_datum=partition.gauge_datum)
+            fundamentals = __inspect(frame=data.copy(), partition=partition)
             resamples = __resampling(data=fundamentals)
 
             computations.append((

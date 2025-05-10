@@ -22,7 +22,8 @@ def main():
 
     src.algorithms.interface.Interface().exc(partitions=partitions)
 
-    src.transfer.interface.Interface(service=service, s3_parameters=s3_parameters).exc()
+    src.transfer.interface.Interface(
+        service=service, s3_parameters=s3_parameters, attributes=attributes).exc(partitions=partitions)
 
     # Deleting __pycache__
     src.functions.cache.Cache().exc()

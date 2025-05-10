@@ -44,6 +44,19 @@ class Directives:
 
         return state.returncode
 
+    @staticmethod
+    def delete(path: str) -> int:
+        """
+
+        :param path: s3://{bucket.name}/{prefix.string}/
+        :return:
+        """
+
+        # Hence
+        state = subprocess.run(f"aws s3 rm {path} --recursive", shell=True, check=True)
+
+        return state.returncode
+
     def unload(self, source_bucket: str, origin: str, target: str) -> int:
         """
 
