@@ -1,15 +1,17 @@
+"""Module cloud.py"""
 import logging
-import dask
-import src.s3.directives
 
+import dask
 import numpy as np
+
 import src.elements.partitions as pr
 import src.elements.s3_parameters as s3p
+import src.s3.directives
 
 
 class Cloud:
     """
-
+    Preparing particular cloud spots
     """
 
     def __init__(self, s3_parameters: s3p.S3Parameters):
