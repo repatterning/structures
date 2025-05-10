@@ -20,6 +20,6 @@ class Config:
         self.fundamentals_ = os.path.join(self.warehouse, 'data', 'fundamentals')
         self.resamples_ = os.path.join(self.warehouse, 'data', 'resamples')
 
-        # Template
+        # Keys
         self.s3_parameters_key = 's3_parameters.yaml'
         self.attributes_key = 'data/structures/attributes.json'
