@@ -1,4 +1,4 @@
-dask[complete]>=2024.7
+dask[complete]>=2025.1
 dask-expr
 graphviz>=0.20.3
 pydot
@@ -7,11 +7,9 @@ botocore>=1.35.11
 s3fs>=2024
 datasets>=2.18
 scikit-learn>=1.4
-numpy>1.26
+numpy>=2.2
 pandas>=2.2
-scipy>=1.13
-matplotlib
-seaborn
+scipy>=1.15
 PyYAML
 requests>=2.32
 pytest>=8.2
