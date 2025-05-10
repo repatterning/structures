@@ -41,7 +41,7 @@ class Cloud:
     def exc(self, partitions: list[pr.Partitions]):
         """
 
-        :param partitions:
+        :param partitions: Refer to src/elements/partitions.py
         :return:
         """
 
