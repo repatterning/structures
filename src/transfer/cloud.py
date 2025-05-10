@@ -17,7 +17,8 @@ class Cloud:
     def __init__(self, s3_parameters: s3p.S3Parameters):
         """
 
-        :param s3_parameters:
+        :param s3_parameters: The overarching S3 parameters settings of this project, e.g., region code
+                              name, buckets, etc.
         """
 
         self.__s3_parameters = s3_parameters
