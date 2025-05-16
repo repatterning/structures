@@ -37,9 +37,29 @@ class Interface:
 
         return attributes
 
-    def exc(self) -> typing.Tuple[boto3.session.Session, s3p.S3Parameters, sr.Service, dict]:
+    @staticmethod
+    def __precedence(empty: bool, attributes: dict):
         """
 
+        :param empty: Is the cloud storage area for structured data empty?
+        :param attributes: github.com/repatterning/configurations/src/data/structures/attributes.*
+        :return:
+        """
+
+        # If excerpt != null, then the represented gauges take precedence
+        if attributes.get('excerpt') is not None:
+            attributes['reacquire'] = False
+
+        # If structured data does not exist, and there are no gauges in focus ...
+        if empty & (attributes.get('excerpt') is None):
+            attributes['reacquire'] = True
+
+        return attributes
+
+    def exc(self, codes: list[int]) -> typing.Tuple[boto3.session.Session, s3p.S3Parameters, sr.Service, dict]:
+        """
+
+        :param codes:
         :return:
         """
 
@@ -49,10 +69,14 @@ class Interface:
             connector=connector, region_name=s3_parameters.region_name).exc()
         attributes: dict = self.__get_attributes(connector=connector)
 
+        # Setting up
         empty = src.preface.setup.Setup(
             service=service, s3_parameters=s3_parameters).exc(reacquire=attributes['reacquire'])
 
-        if empty:
-            attributes['reacquire'] = True
+        if codes is None:
+            attributes = self.__precedence(empty=empty, attributes=attributes)
+        else:
+            attributes['excerpt'] = codes
+            attributes['reacquire'] = False
 
         return connector, s3_parameters, service, attributes
