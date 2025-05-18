@@ -1,5 +1,4 @@
 """Module interface.py"""
-import logging
 import typing
 
 import boto3
@@ -49,11 +48,11 @@ class Interface:
         """
 
         # Initial setting
-        attributes['restart'] = True if inactive else False
+        attributes['restart'] = bool(inactive)
 
 
         if codes is None:
-            attributes['excerpt'] = list()
+            attributes['excerpt'] = []
         else:
             attributes['excerpt'] = codes
             attributes['restart'] = False
