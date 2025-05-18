@@ -50,7 +50,7 @@ class Interface:
         # Applicable time series metadata, i.e., gauge, identification codes
         gauges = src.assets.gauges.Gauges(service=self.__service, s3_parameters=self.__s3_parameters).exc()
 
-        # Strings for data reading.  If self.__attributes.get('reacquire') is False, the partitions will be those
+        # Strings for data reading.  If self.__attributes.get('restart') is False, the partitions will be those
         # of the current and previous year only, per gauge time series.
         partitions = src.assets.partitions.Partitions(data=gauges, attributes=self.__attributes).exc()
 
