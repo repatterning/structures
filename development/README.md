@@ -50,7 +50,7 @@ docker run --rm -i -t -p 8050:8050 -w /app --mount
 
 <br>
 
-Herein, `-p 8050:8000` maps the host port `8050` to container port `8050`.  Note, the container's working environment,
+Herein, `-p 8050:8050` maps the host port `8050` to container port `8050`.  Note, the container's working environment,
 i.e., `-w`, must be inline with this project's top directory.  Additionally, visit the links for more about the flags/options $\rightarrow$
 
 * --rm: [automatically remove container](https://docs.docker.com/engine/reference/commandline/run/#:~:text=a%20container%20exits-,%2D%2Drm,-Automatically%20remove%20the)
