@@ -17,14 +17,17 @@ def main():
     logger: logging.Logger = logging.getLogger(__name__)
     logger.info('Starting: %s', datetime.datetime.now().isoformat(timespec='microseconds'))
 
+    # Partitions
     partitions = src.assets.interface.Interface(
         service=service, s3_parameters=s3_parameters, attributes=attributes).exc()
     logger.info('# of partitions: %s', len(partitions))
 
+    # Computations
     src.algorithms.interface.Interface().exc(partitions=partitions)
 
+    # Transfer
     src.transfer.interface.Interface(
-        service=service, s3_parameters=s3_parameters, attributes=attributes).exc(partitions=partitions)
+         service=service, s3_parameters=s3_parameters, attributes=attributes).exc()
 
     # Deleting __pycache__
     src.functions.cache.Cache().exc()
