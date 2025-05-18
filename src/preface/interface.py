@@ -1,4 +1,5 @@
 """Module interface.py"""
+import logging
 import typing
 
 import boto3
@@ -38,21 +39,24 @@ class Interface:
         return attributes
 
     @staticmethod
-    def __precedence(empty: bool, attributes: dict):
+    def __precedence(inactive: bool, codes: list[int], attributes: dict) -> dict:
         """
 
-        :param empty: Is the cloud storage area for structured data empty?
+        :param inactive: Is the cloud storage area inactive?
+        :param codes: A set of gauge time series codes
         :param attributes: github.com/repatterning/configurations/src/data/structures/attributes.*
         :return:
         """
 
-        # If excerpt != null, then the represented gauges take precedence
-        if attributes.get('excerpt') is not None:
-            attributes['reacquire'] = False
+        # Initial setting
+        attributes['restart'] = True if inactive else False
 
-        # If structured data does not exist, and there are no gauges in focus ...
-        if empty & (attributes.get('excerpt') is None):
-            attributes['reacquire'] = True
+
+        if codes is None:
+            attributes['excerpt'] = list()
+        else:
+            attributes['excerpt'] = codes
+            attributes['restart'] = False
 
         return attributes
 
@@ -70,13 +74,10 @@ class Interface:
         attributes: dict = self.__get_attributes(connector=connector)
 
         # Setting up
-        empty = src.preface.setup.Setup(
-            service=service, s3_parameters=s3_parameters).exc(reacquire=attributes['reacquire'])
+        inactive = src.preface.setup.Setup(
+            service=service, s3_parameters=s3_parameters).exc()
 
-        if codes is None:
-            attributes = self.__precedence(empty=empty, attributes=attributes)
-        else:
-            attributes['excerpt'] = codes
-            attributes['reacquire'] = False
+        # The restart & excerpt fields
+        attributes = self.__precedence(inactive=inactive, codes=codes, attributes=attributes)
 
         return connector, s3_parameters, service, attributes
