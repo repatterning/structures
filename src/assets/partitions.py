@@ -58,17 +58,22 @@ class Partitions:
         :return:
         """
 
-        # Reacquisition with respect to all gauges, and the entire time period of interest
-        if self.__attributes.get('reacquire'):
+        # Reacquisition with respect to all gauges, and the system's data time span
+        if self.__attributes.get('restart'):
             return self.__data
 
-        # Reacquisition with respect to specific gauges, and the entire time period of interest
-        if self.__attributes.get('excerpt') is not None:
-            return self.__data.loc[self.__data['ts_id'].isin(self.__attributes.get('excerpt')), :]
+        # Standard ...
+        codes: list = self.__attributes.get('excerpt')
+        if len(codes) == 0:
+            data = self.__data
+        else:
+            catchments = self.__data.loc[self.__data['ts_id'].isin(codes), 'catchment_id'].unique()
+            data = self.__data.copy().loc[self.__data['catchment_id'].isin(catchments), :]
+            data = data if data.shape[0] > 0 else self.__data
 
         # Daily standard behaviour
         starting, ending = self.__boundaries()
         dates = self.__dates(starting=starting, ending=ending)
-        frame = dates.merge(self.__data, how='left', on='datestr')
+        frame = dates.merge(data, how='left', on='datestr')
 
         return frame

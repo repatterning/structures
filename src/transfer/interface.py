@@ -7,11 +7,10 @@ import pandas as pd
 
 import src.elements.s3_parameters as s3p
 import src.elements.service as sr
-import src.elements.partitions as pr
 import src.s3.ingress
 import src.s3.unload
-import src.transfer.dictionary
 import src.transfer.cloud
+import src.transfer.dictionary
 
 
 class Interface:
@@ -49,17 +48,15 @@ class Interface:
         return frame
 
 
-    def exc(self, partitions: list[pr.Partitions]):
+    def exc(self):
         """
 
-        :param partitions:
         :return:
         """
 
-        # Preparing
-        if self.__attributes.get('excerpt'):
-            logging.info(self.__attributes.get('excerpt'))
-            src.transfer.cloud.Cloud(s3_parameters=self.__s3_parameters).exc(partitions=partitions)
+        # Re-ascertaining bucket existence, and executing steps vis-à-vis restart execution instance
+        src.transfer.cloud.Cloud(
+            service=self.__service, s3_parameters=self.__s3_parameters).exc(restart=self.__attributes.get('restart'))
 
         # The strings for transferring data to Amazon S3 (Simple Storage Service)
         strings: pd.DataFrame = src.transfer.dictionary.Dictionary().exc(

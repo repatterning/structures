@@ -41,25 +41,6 @@ class Setup:
         self.__prefixes = [self.__s3_parameters.path_internal_data + os.path.basename(value)
                     for value in [self.__configurations.resamples_, self.__configurations.fundamentals_] ]
 
-    def __clear_prefix(self) -> bool:
-        """
-
-        :return:
-        """
-
-        # Get the keys therein
-        states = []
-        for prefix in self.__prefixes:
-            keys: list[str] = self.__pre.objects(prefix=prefix)
-            if len(keys) > 0:
-                objects = [{'Key' : key} for key in keys]
-                state = self.__pre.delete(objects=objects)
-                states.append(bool(state))
-            else:
-                states.append(True)
-
-        return all(states)
-
     def __s3(self) -> bool:
         """
         Prepares an Amazon S3 (Simple Storage Service) bucket.
@@ -72,7 +53,7 @@ class Setup:
                                       bucket_name=self.__s3_parameters.internal)
 
         if bucket.exists():
-            return self.__clear_prefix()
+            return True
 
         return bucket.create()
 
@@ -89,15 +70,13 @@ class Setup:
         # The warehouse
         return directories.create(path=self.__configurations.warehouse)
 
-    def exc(self, reacquire: bool) -> bool:
+    def exc(self) -> bool:
         """
 
-        :param reacquire: Re-read all raw data, and structure?
         :return:
         """
 
-        if reacquire:
-            self.__s3()
+        self.__s3()
 
         if self.__local():
             listings = [self.__pre.objects(prefix=prefix) for prefix in self.__prefixes]
