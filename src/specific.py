@@ -18,7 +18,7 @@ class Specific:
         """
 
         if value is None:
-            return list()
+            return []
 
         # Split and strip
         elements = [e.strip() for e in value.split(',')]
