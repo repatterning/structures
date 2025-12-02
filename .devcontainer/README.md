@@ -6,8 +6,8 @@
 
 For this Python project/template, the remote development environment requires
 
-* [Dockerfile](../.devcontainer/Dockerfile)
-* [requirements.txt](../.devcontainer/requirements.txt)
+* [Dockerfile](Dockerfile)
+* [requirements.txt](requirements.txt)
 
 An image is built via the command
 
@@ -68,7 +68,7 @@ The part `-v ~/.aws:/root/.aws` ascertains Amazon Web Services interactions via 
 docker ps --all
 ```
 
-**Never deploy a root container**, study the production [Dockerfile](../Dockerfile); cf. remote [.devcontainer/Dockerfile](../.devcontainer/Dockerfile)
+**Never deploy a root container**, study the production [Dockerfile](../Dockerfile); cf. remote [.devcontainer/Dockerfile](Dockerfile)
 
 <br>
 
