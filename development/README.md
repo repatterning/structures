@@ -1,6 +1,6 @@
 <br>
 
-## Warning Points
+## Warning Cases
 
 > [!IMPORTANT]
 >
